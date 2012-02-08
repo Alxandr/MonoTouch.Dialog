@@ -42,7 +42,7 @@ namespace MonoTouch.Dialog
 			}
 		}
 		
-		protected bool editable;
+		protected bool editable = true;
 
 		/// <summary>
 		/// The key used for reusable UITableViewCells.

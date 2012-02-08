@@ -2725,7 +2725,7 @@ namespace MonoTouch.Dialog
 			if (createOnSelected != null)
 				return createOnSelected (this);
 			
-			return new DialogViewController (this, true) {
+			return new DialogViewController (Style, this, true) {
 				Autorotate = true
 			};
 		}

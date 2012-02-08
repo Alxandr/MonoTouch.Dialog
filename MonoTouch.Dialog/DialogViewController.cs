@@ -583,8 +583,8 @@ namespace MonoTouch.Dialog
 		public override void ViewWillAppear (bool animated)
 		{
 			base.ViewWillAppear (animated);
-			if (AutoHideSearch){
-				if (enableSearch){
+			if (AutoHideSearch) {
+				if (enableSearch) {
 					if (TableView.ContentOffset.Y < 44)
 						TableView.ContentOffset = new PointF (0, 44);
 				}
@@ -593,7 +593,7 @@ namespace MonoTouch.Dialog
 				return;
 			
 			root.Prepare ();
-			
+			dialogStyle.ComputeEntryAlignment (root);
 			NavigationItem.HidesBackButton = !pushing;
 			if (root.Caption != null)
 				NavigationItem.Title = root.Caption;

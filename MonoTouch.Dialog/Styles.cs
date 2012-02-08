@@ -145,11 +145,20 @@ namespace MonoTouch.Dialog
 		protected override SizeF[] ComputeEntryAlignment (List<Section> sections, UITableView tv)
 		{
 			var ret = ComputeEntryAlignment (sections, tv, font);
-			var widest = ret.OrderByDescending (r => r.Width).First ();
-			width = widest.Width;
+			var widest = Widest (ret);
+			width = widest;
 			for (int i = 0; i < ret.Length; i++)
-				ret [i] = widest;
+				ret [i].Width = widest;
 			return ret;
+		}
+		
+		private float Widest (IEnumerable<SizeF> sizes)
+		{
+			var max = -1f;
+			foreach (var s in sizes) {
+				max = Math.Max (s.Width, max);
+			}
+			return max;
 		}
 	}
 }
