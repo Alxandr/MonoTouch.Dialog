@@ -628,10 +628,10 @@ namespace MonoTouch.Dialog
 				NavigationItem.Title = root.Caption;
 			
 			root.Prepare ();
-			dialogStyle.ComputeEntryAlignment (root);
 			if (tableView != null) {
 				UpdateSource ();
 				tableView.ReloadData ();
+				dialogStyle.ComputeEntryAlignment (root);
 			}
 			dirty = false;
 		}
