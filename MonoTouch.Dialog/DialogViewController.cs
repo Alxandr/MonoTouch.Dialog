@@ -29,6 +29,7 @@ namespace MonoTouch.Dialog
 		UITableView tableView;
 		RefreshTableHeaderView refreshView;
 		RootElement root;
+		DialogStyle dialogStyle = DialogStyle.Default;
 		bool pushing;
 		bool dirty;
 		bool reloading;
@@ -47,10 +48,26 @@ namespace MonoTouch.Dialog
 					root.Dispose ();
 				
 				root = value;
-				root.TableView = tableView;		
+				root.TableView = tableView;
+				root.ViewController = this;
 				ReloadData ();
 			}
-		} 
+		}
+		
+		public DialogStyle DialogStyle {
+			get {
+				return dialogStyle;
+			}
+			set {
+				if (dialogStyle == value)
+					return;
+				if (dialogStyle != null)
+					dialogStyle.Dispose ();
+				
+				dialogStyle = value;
+				ReloadData ();
+			}
+		}
 
 		EventHandler refreshRequested;
 		/// <summary>
@@ -528,8 +545,9 @@ namespace MonoTouch.Dialog
 			tableView = MakeTableView (UIScreen.MainScreen.Bounds, Style);
 			tableView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin;
 			tableView.AutosizesSubviews = true;
+			dialogStyle.StyleTable (tableView);
 			
-			if (root != null)
+			if (root != null) 
 				root.Prepare ();
 			
 			UpdateSource ();
@@ -540,6 +558,8 @@ namespace MonoTouch.Dialog
 			if (root == null)
 				return;
 			root.TableView = tableView;
+			root.ViewController = this;
+			dialogStyle.ComputeEntryAlignment (root);
 		}
 		
 		void ConfigureTableView ()
@@ -604,11 +624,12 @@ namespace MonoTouch.Dialog
 			if (root == null)
 				return;
 			
-			if(root.Caption != null) 
+			if (root.Caption != null) 
 				NavigationItem.Title = root.Caption;
 			
 			root.Prepare ();
-			if (tableView != null){
+			dialogStyle.ComputeEntryAlignment (root);
+			if (tableView != null) {
 				UpdateSource ();
 				tableView.ReloadData ();
 			}
@@ -635,6 +656,12 @@ namespace MonoTouch.Dialog
 			this.root = root;
 		}
 		
+		public DialogViewController (DialogStyle dialogStyle, RootElement root) : base(UITableViewStyle.Grouped)
+		{
+			this.dialogStyle = dialogStyle;
+			this.root = root;
+		}
+		
 		/// <summary>
 		///     Creates a new DialogViewController from a RootElement and sets the push status
 		/// </summary>
@@ -650,6 +677,11 @@ namespace MonoTouch.Dialog
 		{
 			this.pushing = pushing;
 			this.root = root;
+		}
+		
+		public DialogViewController (DialogStyle dialogStyle, RootElement root, bool pushing) : this(root, pushing)
+		{
+			this.dialogStyle = dialogStyle;
 		}
 
 		public DialogViewController (UITableViewStyle style, RootElement root, bool pushing) : base (style)

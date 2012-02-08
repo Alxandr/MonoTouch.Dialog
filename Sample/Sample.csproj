@@ -90,6 +90,7 @@
     <Compile Include="DemoContainerStyle.cs" />
     <Compile Include="DemoIndex.cs" />
     <Compile Include="DemoEditingAdvanced.cs" />
+    <Compile Include="DemoContactStyle.cs" />
   </ItemGroup>
   <ItemGroup>
     <InterfaceDefinition Include="MainWindow.xib" xmlns="" />

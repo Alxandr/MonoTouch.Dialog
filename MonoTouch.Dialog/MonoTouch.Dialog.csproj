@@ -102,6 +102,7 @@
     <Compile Include="Utilities\LocalizationExtensions.cs" />
     <Compile Include="Elements\Json.cs" />
     <Compile Include="Elements\MultilineEntryElement.cs" />
+    <Compile Include="Styles.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Images\" />

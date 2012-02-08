@@ -49,10 +49,11 @@ namespace Sample
 					new StringElement ("Headers and Footers", DemoHeadersFooters),
 					new StringElement ("Root Style", DemoContainerStyle),
 					new StringElement ("Index sample", DemoIndex),
+					new StringElement ("DialogStyle sample", DemoContactStyle),
 				},
 				new Section ("Json") {
 					(sampleJson = JsonElement.FromFile ("sample.json")),
-					// Notice what happens when I close the paranthesis at the end, in the next line:
+			// Notice what happens when I close the paranthesis at the end, in the next line:
 					new JsonElement ("Load from URL", "file://" + Path.GetFullPath ("sample.json"))
 				},
 				new Section ("Auto-mapped", footer){
@@ -80,8 +81,8 @@ namespace Sample
 			window.MakeKeyAndVisible ();
 			
 			// On iOS5 we use the new window.RootViewController, on older versions, we add the subview
-            if (UIDevice.CurrentDevice.CheckSystemVersion (5, 0))
-				window.RootViewController = navigation;	
+			if (UIDevice.CurrentDevice.CheckSystemVersion (5, 0))
+				window.RootViewController = navigation;
 			else
 				window.AddSubview (navigation.View);
 			
