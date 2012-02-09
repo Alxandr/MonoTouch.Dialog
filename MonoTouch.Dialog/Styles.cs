@@ -21,6 +21,7 @@ namespace MonoTouch.Dialog
 			set {
 				element = value;
 				dialogStyle = element.Style;
+				dialogStyle.StyleCell (this, element);
 			}
 		}
 		public DialogCell (UITableViewCellStyle style, NSString reuseIdentifier)
@@ -56,6 +57,11 @@ namespace MonoTouch.Dialog
 		}
 		
 		public virtual void LayoutCell (UITableViewCell cell, Element element)
+		{
+			// Do nothing in the default Style
+		}
+		
+		public virtual void StyleCell (UITableViewCell cell, Element element)
 		{
 			// Do nothing in the default Style
 		}
@@ -98,6 +104,25 @@ namespace MonoTouch.Dialog
 				ret [i++] = max;
 			}
 			return ret;
+		}
+		
+		public enum RowType {
+			Top,
+			Mid,
+			Bot,
+			TopBot
+		}
+		
+		protected RowType GetRowType (Element element)
+		{
+			var parent = element.Parent as Section;
+			if (parent.Elements [0] == element && parent.Elements [parent.Elements.Count - 1] == element)
+				return RowType.TopBot;
+			else if (parent.Elements [0] == element)
+				return RowType.Top;
+			else if (parent.Elements [parent.Elements.Count - 1] == element)
+				return RowType.Bot;
+			return RowType.Mid;
 		}
 		
 		#region IDisposable implementation

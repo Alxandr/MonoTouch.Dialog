@@ -194,12 +194,13 @@ namespace MonoTouch.Dialog
 		
 		public override UITableViewCell GetCell (UITableView tv)
 		{
-			var cell = tv.DequeueReusableCell (CellKey);
+			var cell = (DialogCell)tv.DequeueReusableCell (CellKey);
 			if (cell == null) {
-				cell = new UITableViewCell (UITableViewCellStyle.Default, CellKey);
+				cell = new DialogCell (UITableViewCellStyle.Default, CellKey);
 				cell.SelectionStyle = UITableViewCellSelectionStyle.None;
 			} else 
 				RemoveTag (cell, 1);
+			cell.Element = this;
 			
 			if (entry == null) {
 				SizeF size = ComputeEntryPosition (tv, cell);

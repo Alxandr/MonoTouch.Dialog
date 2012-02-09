@@ -359,7 +359,7 @@ namespace MonoTouch.Dialog
 			
 			public override void WillDisplay (UITableView tableView, UITableViewCell cell, NSIndexPath indexPath)
 			{
-				if (Root.NeedColorUpdate){
+				if (Root.NeedColorUpdate) {
 					var section = Root.Sections [indexPath.Section];
 					var element = section.Elements [indexPath.Row];
 					var colorized = element as IColorizeBackground;
