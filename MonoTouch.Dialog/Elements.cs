@@ -1078,11 +1078,15 @@ namespace MonoTouch.Dialog
 
 		public override void Selected (DialogViewController dvc, UITableView tableView, NSIndexPath indexPath)
 		{
-			RootElement root = (RootElement) Parent.Parent;
-			if (RadioIdx != root.RadioSelected){
-				var cell = tableView.CellAt (root.PathForRadio (root.RadioSelected));
-				if (cell != null)
-					cell.Accessory = UITableViewCellAccessory.None;
+			RootElement root = (RootElement)Parent.Parent;
+			UITableViewCell cell;
+			if (RadioIdx != root.RadioSelected) {
+				var radioPath = root.PathForRadio (root.RadioSelected);
+				if (radioPath != null) {
+					cell = tableView.CellAt (radioPath);
+					if (cell != null)
+						cell.Accessory = UITableViewCellAccessory.None;
+				}
 				cell = tableView.CellAt (indexPath);
 				if (cell != null)
 					cell.Accessory = UITableViewCellAccessory.Checkmark;

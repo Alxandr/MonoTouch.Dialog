@@ -21,7 +21,7 @@ namespace MonoTouch.Dialog
 			set {
 				element = value;
 				dialogStyle = element.Style;
-				dialogStyle.StyleCell (this, element);
+				SetNeedsLayout ();
 			}
 		}
 		public DialogCell (UITableViewCellStyle style, NSString reuseIdentifier)
@@ -31,6 +31,7 @@ namespace MonoTouch.Dialog
 		
 		public override void LayoutSubviews ()
 		{
+			dialogStyle.StyleCell (this, element);
 			base.LayoutSubviews ();
 			dialogStyle.LayoutCell (this, element);
 		}
