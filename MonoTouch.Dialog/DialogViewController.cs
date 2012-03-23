@@ -543,15 +543,15 @@ namespace MonoTouch.Dialog
 		public override void LoadView ()
 		{
 			tableView = MakeTableView (UIScreen.MainScreen.Bounds, Style);
+			dialogStyle.StyleTable (tableView);
 			tableView.AutoresizingMask = UIViewAutoresizing.FlexibleHeight | UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleTopMargin;
 			tableView.AutosizesSubviews = true;
-			dialogStyle.StyleTable (tableView);
 			
 			if (root != null) 
 				root.Prepare ();
 			
 			UpdateSource ();
-			View = tableView;
+			View = dialogStyle.SetupView (tableView);
 			SetupSearch ();
 			ConfigureTableView ();
 			

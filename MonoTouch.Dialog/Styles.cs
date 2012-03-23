@@ -67,6 +67,12 @@ namespace MonoTouch.Dialog
 			// Do nothing in the default Style
 		}
 		
+		public virtual UIView SetupView (UITableView tableView)
+		{
+			// Simply insert tableView as view in default Style
+			return tableView;
+		}
+		
 		public void ComputeEntryAlignment (RootElement root)
 		{
 			var result = ComputeEntryAlignment (root.Sections, root.TableView);
@@ -132,6 +138,65 @@ namespace MonoTouch.Dialog
 			
 		}
 		#endregion
+		
+		private class DialogBackgroundView : UIView
+		{
+			private UIView backgroundView;
+			private UITableView tableView;
+			private NSObject openObserver;
+			private NSObject closeObserver;
+			
+			public DialogBackgroundView (UIView backgroundView, UITableView tableView)
+			{
+				AutoresizingMask = UIViewAutoresizing.FlexibleWidth | UIViewAutoresizing.FlexibleHeight;
+				this.backgroundView = backgroundView;
+				this.tableView = tableView;
+				AddSubview (backgroundView);
+				AddSubview (tableView);
+				
+				openObserver = NSNotificationCenter.DefaultCenter.AddObserver (UIKeyboard.WillShowNotification, ResizeKeyboardEvent);
+				closeObserver = NSNotificationCenter.DefaultCenter.AddObserver (UIKeyboard.WillHideNotification, ResizeKeyboardEvent);
+				
+			}
+			
+			~DialogBackgroundView ()
+			{
+				NSNotificationCenter.DefaultCenter.RemoveObserver (openObserver);
+				NSNotificationCenter.DefaultCenter.RemoveObserver (closeObserver);
+			}
+			
+			public override void LayoutSubviews ()
+			{
+				base.LayoutSubviews ();
+				tableView.Frame = new RectangleF (tableView.Frame.Location, Frame.Size);
+			}
+			
+			private void ResizeKeyboardEvent (NSNotification notification)
+			{	
+				var currentFrame = UIKeyboard.FrameBeginFromNotification (notification);
+				var endFrame = UIKeyboard.FrameEndFromNotification (notification);
+				var duration = UIKeyboard.AnimationDurationFromNotification (notification);
+				var curve = UIKeyboard.AnimationCurveFromNotification (notification);
+				var frameBottomDiff = endFrame.Y - currentFrame.Y;
+				
+				if (Window == null) {
+					Frame = new RectangleF (Frame.Location, 
+				                                  new SizeF (Frame.Width, Frame.Height - (currentFrame.Y - endFrame.Y)));
+				} else {
+					UIView.BeginAnimations ("KeyboardFit");
+					UIView.SetAnimationCurve ((UIViewAnimationCurve)curve);
+					UIView.SetAnimationDuration (duration);
+					Frame = new RectangleF (Frame.Location, 
+				                                  new SizeF (Frame.Width, Frame.Height - (currentFrame.Y - endFrame.Y)));
+					UIView.CommitAnimations ();
+				}
+			}
+		}
+		
+		public static UIView TableWithBackgroundView (UITableView tableView, UIView backgroundView)
+		{
+			return new DialogBackgroundView (backgroundView, tableView);
+		}
 	}
 	
 	public class ContactsDialogStyle : DialogStyle
