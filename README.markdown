@@ -105,6 +105,15 @@ some advanced used cases of MonoTouch.Dialog.
 
 Miguel (miguel@gnome.org)
 
+Styling
+=======
+This patch on MonoTouch.Dialog includes support for styling. Included with the samples
+is a new DialogViewController showing this in use. With exactly the same code as above, 
+with simply a different parameter to the DialogViewController's constructor the it is now
+possible to get the following result:
+
+![screenshot](http://i.imgur.com/iwBt6.png "Styling sample")
+
 Using MonoTouch.Dialog
 ======================
 
