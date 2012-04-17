@@ -110,6 +110,8 @@
     <Content Include="favorited.png" />
     <Content Include="background.png" />
     <Content Include="sample.json" />
+    <Content Include="background_style.png" />
+    <Content Include="background_style%402x.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />

@@ -22,6 +22,7 @@ using MonoTouch.CoreGraphics;
 using System.Drawing;
 using MonoTouch.Foundation;
 using MonoTouch.Dialog.Utilities;
+using System.Threading;
 
 namespace MonoTouch.Dialog
 {
@@ -1547,8 +1548,13 @@ namespace MonoTouch.Dialog
 						entry.ReturnKeyType = returnType;
 					} else
 						entry.ReturnKeyType = returnKeyType.Value;
-
-					tv.ScrollToRow (IndexPath, UITableViewScrollPosition.Middle, true);
+					
+					ThreadPool.QueueUserWorkItem (delegate {
+						Thread.Sleep (100);
+						tv.InvokeOnMainThread (delegate {
+							tv.ScrollToRow (IndexPath, UITableViewScrollPosition.Middle, true);
+						});
+					});
 				};
 			}
 			if (becomeResponder) {
