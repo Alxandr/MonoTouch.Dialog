@@ -7,6 +7,7 @@ using MonoTouch.CoreGraphics;
 using System.Drawing;
 using MonoTouch.Foundation;
 using MonoTouch.Dialog.Utilities;
+using System.Threading;
 
 namespace MonoTouch.Dialog
 {
@@ -145,6 +146,7 @@ namespace MonoTouch.Dialog
 			private UITableView tableView;
 			private NSObject openObserver;
 			private NSObject closeObserver;
+			private float keyboardHeight;
 			
 			public DialogBackgroundView (UIView backgroundView, UITableView tableView)
 			{
@@ -168,7 +170,7 @@ namespace MonoTouch.Dialog
 			public override void LayoutSubviews ()
 			{
 				base.LayoutSubviews ();
-				tableView.Frame = new RectangleF (tableView.Frame.Location, Frame.Size);
+				tableView.Frame = new RectangleF (tableView.Frame.Location, new SizeF(Frame.Width, Frame.Height - keyboardHeight));
 			}
 			
 			private void ResizeKeyboardEvent (NSNotification notification)
@@ -177,17 +179,27 @@ namespace MonoTouch.Dialog
 				var endFrame = UIKeyboard.FrameEndFromNotification (notification);
 				var duration = UIKeyboard.AnimationDurationFromNotification (notification);
 				var curve = UIKeyboard.AnimationCurveFromNotification (notification);
-				var frameBottomDiff = endFrame.Y - currentFrame.Y;
+				currentFrame.Intersect (UIScreen.MainScreen.Bounds);
+				endFrame.Intersect (UIScreen.MainScreen.Bounds);
+				
+				if (endFrame.Height == UIScreen.MainScreen.Bounds.Height) {
+					endFrame = new RectangleF (
+						endFrame.Y, endFrame.X,
+						endFrame.Height, endFrame.Width
+						);
+				}
+				
+				keyboardHeight = Math.Max(endFrame.Height, 0);
 				
 				if (Window == null) {
-					Frame = new RectangleF (Frame.Location, 
-				                                  new SizeF (Frame.Width, Frame.Height - (currentFrame.Y - endFrame.Y)));
+					tableView.Frame = new RectangleF (tableView.Frame.Location, 
+				                                  new SizeF (tableView.Frame.Width, Frame.Height - keyboardHeight));
 				} else {
 					UIView.BeginAnimations ("KeyboardFit");
 					UIView.SetAnimationCurve ((UIViewAnimationCurve)curve);
 					UIView.SetAnimationDuration (duration);
-					Frame = new RectangleF (Frame.Location, 
-				                                  new SizeF (Frame.Width, Frame.Height - (currentFrame.Y - endFrame.Y)));
+					tableView.Frame = new RectangleF (tableView.Frame.Location, 
+				                                  new SizeF (tableView.Frame.Width, Frame.Height - keyboardHeight));
 					UIView.CommitAnimations ();
 				}
 			}
