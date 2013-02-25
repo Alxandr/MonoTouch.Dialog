@@ -1,0 +1,5 @@
+C:\Users\Aleksander\Documents\Visual Studio 2012\Projects\FdvWeb.Mobile\lib\MonoTouch.Dialog\MonoTouch.Dialog\obj\iPhone\Debug\MonoTouch.Dialog.csprojResolveAssemblyReference.cache
+C:\Users\Aleksander\Documents\Visual Studio 2012\Projects\FdvWeb.Mobile\lib\MonoTouch.Dialog\MonoTouch.Dialog\bin\iPhone\Debug\MonoTouch.Dialog.dll
+C:\Users\Aleksander\Documents\Visual Studio 2012\Projects\FdvWeb.Mobile\lib\MonoTouch.Dialog\MonoTouch.Dialog\bin\iPhone\Debug\MonoTouch.Dialog.pdb
+C:\Users\Aleksander\Documents\Visual Studio 2012\Projects\FdvWeb.Mobile\lib\MonoTouch.Dialog\MonoTouch.Dialog\obj\iPhone\Debug\MonoTouch.Dialog.dll
+C:\Users\Aleksander\Documents\Visual Studio 2012\Projects\FdvWeb.Mobile\lib\MonoTouch.Dialog\MonoTouch.Dialog\obj\iPhone\Debug\MonoTouch.Dialog.pdb

@@ -513,10 +513,10 @@ namespace MonoTouch.Dialog {
 			string background = null;
 			NSAction ontap = null;
 			NSAction onaccessorytap = null;
-			int? lines;
-			UITableViewCellAccessory? accessory;
-			UILineBreakMode? linebreakmode;
-			UITextAlignment? alignment;
+			int? lines = null;
+			UITableViewCellAccessory? accessory = null;
+			UILineBreakMode? linebreakmode = null;
+			UITextAlignment? alignment = null;
 			UIColor textcolor = null, detailcolor = null;
 			UIFont font = null;
 			UIFont detailfont = null;
