@@ -120,6 +120,7 @@ namespace MonoTouch.Dialog
 		UITextAutocorrectionType autocorrectionType = UITextAutocorrectionType.Default;
 		bool becomeResponder;
 		UITextView entry;
+		UIToolbar tlb;
 		static UIFont font = UIFont.BoldSystemFontOfSize (17);
 
 		public event EventHandler Changed;
@@ -209,6 +210,7 @@ namespace MonoTouch.Dialog
 				
 				entry = CreateTextField (new RectangleF (size.Width, yOffset, width, size.Height + (height - 44)));
 				entry.Font = inputFont;
+				entry.InputAccessoryView = EntryElement.Tlb;
 				
 				entry.Changed += delegate {
 					FetchValue ();
@@ -250,6 +252,7 @@ namespace MonoTouch.Dialog
 				};*/
 				entry.Started += delegate {
 					entry.ReturnKeyType = UIReturnKeyType.Default;
+					EntryElement.Cr = entry;
 
 					tv.ScrollToRow (IndexPath, UITableViewScrollPosition.Middle, true);
 				};

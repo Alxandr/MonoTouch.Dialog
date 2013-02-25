@@ -33,6 +33,7 @@ namespace MonoTouch.Dialog
 		bool pushing;
 		bool dirty;
 		bool reloading;
+		UIView view;
 
 		/// <summary>
 		/// The root element displayed by the DialogViewController, the value can be changed during runtime to update the contents.
@@ -137,7 +138,7 @@ namespace MonoTouch.Dialog
 			if (reloading && showStatus && refreshView != null){
 				UIView.BeginAnimations ("reloadingData");
 				UIView.SetAnimationDuration (0.2);
-				TableView.ContentInset = new UIEdgeInsets (60, 0, 0, 0);
+				tableView.ContentInset = new UIEdgeInsets (60, 0, 0, 0);
 				UIView.CommitAnimations ();
 			}
 		}
@@ -160,7 +161,7 @@ namespace MonoTouch.Dialog
 			refreshView.Flip (false);
 			UIView.BeginAnimations ("doneReloading");
 			UIView.SetAnimationDuration (0.3f);
-			TableView.ContentInset = new UIEdgeInsets (0, 0, 0, 0);
+			tableView.ContentInset = new UIEdgeInsets (0, 0, 0, 0);
 			refreshView.SetStatus (RefreshViewStatus.PullToReload);
 			UIView.CommitAnimations ();
 		}
@@ -420,7 +421,7 @@ namespace MonoTouch.Dialog
 				if (view == null)
 					return;
 				
-				var point = Container.TableView.ContentOffset;
+				var point = Container.tableView.ContentOffset;
 				
 				if (view.IsFlipped && point.Y > -yboundary && point.Y < 0){
 					view.Flip (true);
@@ -442,7 +443,7 @@ namespace MonoTouch.Dialog
 					return;
 				
 				checkForRefresh = false;
-				if (Container.TableView.ContentOffset.Y > -yboundary)
+				if (Container.tableView.ContentOffset.Y > -yboundary)
 					return;
 				Container.TriggerRefresh (true);
 			}
@@ -551,7 +552,7 @@ namespace MonoTouch.Dialog
 				root.Prepare ();
 			
 			UpdateSource ();
-			View = dialogStyle.SetupView (tableView);
+			View = view = dialogStyle.SetupView (tableView);
 			SetupSearch ();
 			ConfigureTableView ();
 			
@@ -571,7 +572,7 @@ namespace MonoTouch.Dialog
 				refreshView = MakeRefreshTableHeaderView (new RectangleF (0, -bounds.Height, bounds.Width, bounds.Height));
 				if (reloading)
 					refreshView.SetActivity (true);
-				TableView.AddSubview (refreshView);
+				tableView.AddSubview (refreshView);
 			}
 		}
 		
@@ -680,6 +681,11 @@ namespace MonoTouch.Dialog
 		}
 		
 		public DialogViewController (DialogStyle dialogStyle, RootElement root, bool pushing) : this(root, pushing)
+		{
+			this.dialogStyle = dialogStyle;
+		}
+		
+		public DialogViewController (DialogStyle dialogStyle, UITableViewStyle tableViewStyle, RootElement root) : this(tableViewStyle, root)
 		{
 			this.dialogStyle = dialogStyle;
 		}

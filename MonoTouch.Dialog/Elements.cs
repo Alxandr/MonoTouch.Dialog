@@ -224,7 +224,12 @@ namespace MonoTouch.Dialog
 		}
 		
 		internal protected DialogStyle Style {
-			get { return GetImmediateRootElement ().ViewController.DialogStyle; }
+			get {
+                var root = GetImmediateRootElement ();
+                if (root == null)
+                    return DialogStyle.Default;
+                return root.ViewController.DialogStyle;
+            }
 		}
 		
 		public virtual bool SizeCaption {
@@ -1035,7 +1040,7 @@ namespace MonoTouch.Dialog
 		public virtual float GetHeight (UITableView tableView, NSIndexPath indexPath)
 		{
 			SizeF size = new SizeF (280, float.MaxValue);
-			using (var defaultFont = UIFont.FromName ("Helvetica", 17f))
+			using (var defaultFont = UIFont.FromName ("Helvetica", 18f))
 			using (var label = new UILabel()) {
 				label.Font = defaultFont;
 				Style.StyleCaption (label, this);
@@ -1476,6 +1481,31 @@ namespace MonoTouch.Dialog
 				return cellkey;
 			}
 		}
+
+		static void CloseCr (object sender, EventArgs args)
+		{
+			if(Cr != null)
+				Cr.ResignFirstResponder();
+			Cr = null;
+		}
+		private static UIToolbar tlb;
+		private static UIBarButtonItem _separator;
+		private static UIBarButtonItem _button;
+		internal static UIResponder Cr { get; set; }
+		internal static UIToolbar Tlb {
+			get {
+				if(tlb == null) {
+					tlb = new UIToolbar(new RectangleF(0, 0, UIScreen.MainScreen.ApplicationFrame.Width, 44));
+					tlb.BarStyle = UIBarStyle.Black;
+					tlb.Translucent = true;
+					tlb.Items = new UIBarButtonItem[] {
+						(_separator = new UIBarButtonItem(UIBarButtonSystemItem.FlexibleSpace)),
+						(_button = new UIBarButtonItem(UIBarButtonSystemItem.Done, CloseCr))
+					};
+				}
+				return tlb;
+			}
+		}
 		
 		public override UITableViewCell GetCell (UITableView tv)
 		{
@@ -1494,6 +1524,8 @@ namespace MonoTouch.Dialog
 				float width = cell.ContentView.Bounds.Width - size.Width;
 				
 				entry = CreateTextField (new RectangleF (size.Width, yOffset, width, size.Height));
+
+				entry.InputAccessoryView = Tlb;
 				
 				entry.ValueChanged += delegate {
 					FetchValue ();
@@ -1548,6 +1580,8 @@ namespace MonoTouch.Dialog
 						entry.ReturnKeyType = returnType;
 					} else
 						entry.ReturnKeyType = returnKeyType.Value;
+
+					Cr = entry;
 					
 					ThreadPool.QueueUserWorkItem (delegate {
 						Thread.Sleep (100);
@@ -1558,6 +1592,7 @@ namespace MonoTouch.Dialog
 				};
 			}
 			if (becomeResponder) {
+				Cr = entry;
 				entry.BecomeFirstResponder ();
 				becomeResponder = false;
 			}
@@ -2021,7 +2056,7 @@ namespace MonoTouch.Dialog
 		public int AddAll (IEnumerable<Element> elements)
 		{
 			int count = 0;
-			foreach (var e in elements){
+			foreach (var e in elements) {
 				Add (e);
 				count++;
 			}
@@ -2098,17 +2133,21 @@ namespace MonoTouch.Dialog
 
 			int pos = idx;
 			int count = 0;
-			foreach (var e in newElements){
+			foreach (var e in newElements) {
 				Elements.Insert (pos++, e);
 				e.Parent = this;
 				count++;
 			}
 			var root = Parent as RootElement;
-			if (root != null && root.TableView != null){				
+			if (root != null && root.TableView != null) {	
+				if (anim != UITableViewRowAnimation.None)
+					root.TableView.BeginUpdates ();
 				if (anim == UITableViewRowAnimation.None)
 					root.TableView.ReloadData ();
 				else
-					InsertVisual (idx, anim, pos-idx);
+					InsertVisual (idx, anim, pos - idx);
+				if (anim != UITableViewRowAnimation.None)
+					root.TableView.EndUpdates ();
 			}
 			return count;
 		}
@@ -2186,8 +2225,8 @@ namespace MonoTouch.Dialog
 			
 			var root = Parent as RootElement;
 			
-			if (start+count > Elements.Count)
-				count = Elements.Count-start;
+			if (start + count > Elements.Count)
+				count = Elements.Count - start;
 			
 			Elements.RemoveRange (start, count);
 			
@@ -2197,8 +2236,10 @@ namespace MonoTouch.Dialog
 			int sidx = root.IndexOf (this);
 			var paths = new NSIndexPath [count];
 			for (int i = 0; i < count; i++)
-				paths [i] = NSIndexPath.FromRowSection (start+i, sidx);
+				paths [i] = NSIndexPath.FromRowSection (start + i, sidx);
+			root.TableView.BeginUpdates ();
 			root.TableView.DeleteRows (paths, anim);
+			root.TableView.EndUpdates ();
 		}
 		
 		/// <summary>
@@ -2659,65 +2700,66 @@ namespace MonoTouch.Dialog
 		}
 		
 		public override UITableViewCell GetCell (UITableView tv)
-		{
-			NSString key = summarySection == -1 ? rkey1 : rkey2;
-			var cell = tv.DequeueReusableCell (key);
-			if (cell == null) {
-				var style = summarySection == -1 ? UITableViewCellStyle.Default : UITableViewCellStyle.Value1;
+        {
+            NSString key = summarySection == -1 ? rkey1 : rkey2;
+            var cell = tv.DequeueReusableCell (key) as DialogCell;
+            if (cell == null) {
+                var style = summarySection == -1 ? UITableViewCellStyle.Default : UITableViewCellStyle.Value1;
 				
-				cell = new UITableViewCell (style, key);
-				cell.SelectionStyle = UITableViewCellSelectionStyle.Blue;
-			} 
+                cell = new DialogCell (style, key);
+                cell.SelectionStyle = UITableViewCellSelectionStyle.Blue;
+            } 
+            cell.Element = this;
 		
-			cell.TextLabel.Text = Caption;
-			Style.StyleCaption (cell.TextLabel, this);
-			var radio = group as RadioGroup;
-			if (radio != null) {
-				int selected = radio.Selected;
-				int current = 0;
+            cell.TextLabel.Text = Caption;
+            Style.StyleCaption (cell.TextLabel, this);
+            var radio = group as RadioGroup;
+            if (radio != null) {
+                int selected = radio.Selected;
+                int current = 0;
 				
-				foreach (var s in Sections) {
-					foreach (var e in s.Elements) {
-						if (!(e is RadioElement))
-							continue;
+                foreach (var s in Sections) {
+                    foreach (var e in s.Elements) {
+                        if (!( e is RadioElement ))
+                            continue;
 						
-						if (current == selected) {
-							cell.DetailTextLabel.Text = e.Summary ();
-							goto le;
-						}
-						current++;
-					}
-				}
-			} else if (group != null) {
-				int count = 0;
+                        if (current == selected) {
+                            cell.DetailTextLabel.Text = e.Summary ();
+                            goto le;
+                        }
+                        current++;
+                    }
+                }
+            } else if (group != null) {
+                    int count = 0;
 				
-				foreach (var s in Sections) {
-					foreach (var e in s.Elements) {
-						var ce = e as CheckboxElement;
-						if (ce != null) {
-							if (ce.Value)
-								count++;
-							continue;
-						}
-						var be = e as BoolElement;
-						if (be != null) {
-							if (be.Value)
-								count++;
-							continue;
-						}
-					}
-				}
-				cell.DetailTextLabel.Text = count.ToString ();
-			} else if (summarySection != -1 && summarySection < Sections.Count) {
-				var s = Sections [summarySection];
-				if (summaryElement < s.Elements.Count && cell.DetailTextLabel != null)
-					cell.DetailTextLabel.Text = s.Elements [summaryElement].Summary ();
-			} 
+                    foreach (var s in Sections) {
+                        foreach (var e in s.Elements) {
+                            var ce = e as CheckboxElement;
+                            if (ce != null) {
+                                if (ce.Value)
+                                    count++;
+                                continue;
+                            }
+                            var be = e as BoolElement;
+                            if (be != null) {
+                                if (be.Value)
+                                    count++;
+                                continue;
+                            }
+                        }
+                    }
+                    cell.DetailTextLabel.Text = count.ToString ();
+                } else if (summarySection != -1 && summarySection < Sections.Count) {
+                        var s = Sections[summarySection];
+                        if (summaryElement < s.Elements.Count && cell.DetailTextLabel != null)
+                            cell.DetailTextLabel.Text = s.Elements[summaryElement].Summary ();
+                    } 
 		le:
-			cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
+            cell.Accessory = UITableViewCellAccessory.DisclosureIndicator;
 			
-			return cell;
-		}
+            return cell;
+        }
 		
 		/// <summary>
 		///    This method does nothing by default, but gives a chance to subclasses to

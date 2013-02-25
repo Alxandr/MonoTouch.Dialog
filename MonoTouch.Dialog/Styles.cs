@@ -15,7 +15,11 @@ namespace MonoTouch.Dialog
 	{
 		private DialogStyle dialogStyle;
 		private Element element;
-		public Element Element {
+		private RectangleF _oldFrame;
+		private int _threshold = 0;
+		const int THRESHOLD = 10;
+
+		public virtual Element Element {
 			get {
 				return element;
 			}
@@ -29,12 +33,27 @@ namespace MonoTouch.Dialog
 			: base(style, reuseIdentifier)
 		{
 		}
-		
+
 		public override void LayoutSubviews ()
 		{
+			var frame = Frame;
+			if (frame == _oldFrame) {
+				if(_threshold >= THRESHOLD) return;
+				_threshold++;
+			} else {
+				_oldFrame = frame;
+			}
+
 			dialogStyle.StyleCell (this, element);
 			base.LayoutSubviews ();
 			dialogStyle.LayoutCell (this, element);
+		}
+
+		public override void SetNeedsLayout ()
+		{
+			_oldFrame = default(RectangleF);
+			_threshold = 0;
+			base.SetNeedsLayout ();
 		}
 	}
 	
@@ -146,6 +165,7 @@ namespace MonoTouch.Dialog
 			private UITableView tableView;
 			private NSObject openObserver;
 			private NSObject closeObserver;
+			private NSObject closedObserver;
 			private float keyboardHeight;
 			
 			public DialogBackgroundView (UIView backgroundView, UITableView tableView)
@@ -158,13 +178,23 @@ namespace MonoTouch.Dialog
 				
 				openObserver = NSNotificationCenter.DefaultCenter.AddObserver (UIKeyboard.WillShowNotification, ResizeKeyboardEvent);
 				closeObserver = NSNotificationCenter.DefaultCenter.AddObserver (UIKeyboard.WillHideNotification, ResizeKeyboardEvent);
-				
+				closedObserver = NSNotificationCenter.DefaultCenter.AddObserver (UIKeyboard.DidHideNotification, KeyboardDidHide);
+
+				tableView.SeparatorColor = UIColor.Clear;
+				tableView.BackgroundView = null;
 			}
 			
 			~DialogBackgroundView ()
 			{
 				NSNotificationCenter.DefaultCenter.RemoveObserver (openObserver);
 				NSNotificationCenter.DefaultCenter.RemoveObserver (closeObserver);
+				NSNotificationCenter.DefaultCenter.RemoveObserver (closedObserver);
+			}
+			
+			private void KeyboardDidHide (NSNotification notification)
+			{
+				keyboardHeight = 0;
+				SetNeedsLayout ();
 			}
 			
 			public override void LayoutSubviews ()
@@ -186,10 +216,17 @@ namespace MonoTouch.Dialog
 					endFrame = new RectangleF (
 						endFrame.Y, endFrame.X,
 						endFrame.Height, endFrame.Width
-						);
+					);
 				}
 				
-				keyboardHeight = Math.Max(endFrame.Height, 0);
+				keyboardHeight = Math.Max (endFrame.Height, 0);
+				if (keyboardHeight > 0 && Superview != null) {
+					var superFrame = Superview.Frame;
+					var topOffset = superFrame.Top;
+					var height = UIScreen.MainScreen.Bounds.Height - topOffset - keyboardHeight;
+					keyboardHeight = Math.Min (keyboardHeight, tableView.Frame.Height - height);
+				}
+
 				
 				if (Window == null) {
 					tableView.Frame = new RectangleF (tableView.Frame.Location, 
